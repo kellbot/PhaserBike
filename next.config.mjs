@@ -2,7 +2,7 @@
 const nextConfig = {
     output: 'export',
     distDir: 'dist',
-    basePath: '/PhaserBike',
+    basePath: "/",
     images: {
         unoptimized: true
     },
