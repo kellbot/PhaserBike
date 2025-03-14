@@ -36,6 +36,7 @@ export class Preloader extends Scene
         this.load.image('player-ship', 'ship_1.png');
         this.load.image('space-background', 'space-bg-1.png');
         this.load.spritesheet('green-thrust', 'turbo_green.png', { frameWidth: 48, frameHeight: 48} );
+        this.load.spritesheet('coin-spinning', 'coin_anim.png', { frameWidth: 32, frameHeight: 32} );
     }
 
     create ()
