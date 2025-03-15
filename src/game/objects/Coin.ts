@@ -1,6 +1,7 @@
+import { GameObjects } from "phaser";
 export { Coin, Coins };
 
-class Coin extends Phaser.GameObjects.Sprite
+class Coin extends GameObjects.Sprite
 {
     captured: boolean = false;
 
@@ -66,7 +67,8 @@ class Coins extends Phaser.GameObjects.Group
         let closestDistance = Number.MAX_VALUE;
 
         let children = this.getChildren();
-        children.forEach((coin: Coin) => {
+        children.forEach((child: any) => {
+            const coin = child as Coin;
             if (coin.active && coin.visible)
             {
                 console.log(coin.x, coin.y);
