@@ -2,6 +2,8 @@ export { Coin, Coins };
 
 class Coin extends Phaser.GameObjects.Sprite
 {
+    captured: boolean = false;
+
     constructor (scene: Phaser.Scene, x: number, y: number)
     {
         super(scene, x, y, 'coin-spinning');
@@ -17,10 +19,16 @@ class Coin extends Phaser.GameObjects.Sprite
         if (this.y > this.scene.cameras.main.height + 32)
         {
             this.setActive(false).setVisible(false);
-        } else {
-            this.y += 25 * delta / 1000;
+        } else if (!this.captured) {
+            this.y += 30 * delta / 1000;
         }
 
+    }
+
+    despawn()
+    {
+        this.setActive(false).setVisible(false);
+        this.captured = false;
     }
 }
 
@@ -52,4 +60,28 @@ class Coins extends Phaser.GameObjects.Group
         }
     }
 
+    getClosestCoin(x: number, y: number)
+    {
+        let closestCoin: Coin = this.getFirstAlive(false);
+        let closestDistance = Number.MAX_VALUE;
+
+        let children = this.getChildren();
+        children.forEach((coin: Coin) => {
+            if (coin.active && coin.visible)
+            {
+                console.log(coin.x, coin.y);
+                const dx = x - coin.x;
+                const dy = y - coin.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < closestDistance && !coin.captured)
+                {
+                    closestDistance = distance;
+                    closestCoin = coin;
+                }
+            }
+        });
+
+        return closestCoin;
+    }
 }

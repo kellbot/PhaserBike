@@ -1,13 +1,14 @@
 import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 import { Coins } from '../objects/Coin';
+import { Ship } from '../objects/Ship';
 
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.TileSprite;
     gameText: Phaser.GameObjects.Text;
-    ship: Phaser.GameObjects.Container;
+    ship: Ship;
     coin: Phaser.GameObjects.Sprite;
     coins: Coins;
 
@@ -23,11 +24,9 @@ export class Game extends Scene
         this.camera.setBackgroundColor(0x00ff00);
 
         this.background = this.add.tileSprite(0,0, 600, 1600, 'space-background').setOrigin(0).setScrollFactor(0,1);
-        this.ship = this.add.container(300, 700);
-        this.ship.add(this.add.image(0, 0, 'player-ship'));
 
         this.anims.create({
-            key: 'thrust',
+            key: 'pulse',
             frames: 'green-thrust',
             frameRate: 8,
             repeat: -1
@@ -40,9 +39,9 @@ export class Game extends Scene
             repeat: -1
         });
 
-        this.ship.add(this.add.sprite(-3, 30, 'green-thrust').play('thrust'));
-        this.ship.add(this.add.sprite(7, 30, 'green-thrust').play('thrust'));
-
+        this.ship = new Ship(this);
+        this.add.existing(this.ship);
+      
         this.coins = new Coins(this);//this.add.sprite(200, 400, 'coin-spinning').play('spin');
         this.coins.spawnCoin(200, 400);
 
@@ -52,11 +51,16 @@ export class Game extends Scene
 
         this.gameText = this.add.text(300, 200, 'Press Spacebar to Grab Coins', {
             fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
+            stroke: '#000000', strokeThickness: 6,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
         EventBus.emit('current-scene-ready', this);
+
+        this.input.keyboard?.on('keydown-SPACE', () =>
+            {
+                this.ship.capture(this.coins.getClosestCoin(this.ship.x, this.ship.y));
+            });
     }
 
     update (time: number, delta: number)
@@ -68,14 +72,16 @@ export class Game extends Scene
             this.coins.lastSpawnTime = time;
         }
 
-        if (time - this.coins.lastSpawnTime > 5000) {
-            this.coins.spawnCoin(Phaser.Math.Between(50, 550), -32);
+        if (time - this.coins.lastSpawnTime > Math.random() * 2000 + 2500) {
+            this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
             this.coins.lastSpawnTime = time;
         }
+
+        this.ship.update(time, delta);
     }
 
     changeScene ()
     {
-        this.scene.start('GameOver');
+        // this.scene.start('GameOver');
     }
 }
