@@ -26,6 +26,13 @@ export class Game extends Scene
         this.background = this.add.tileSprite(0,0, 600, 1600, 'space-background').setOrigin(0).setScrollFactor(0,1);
 
         this.anims.create({
+            key: 'bulletPulse',
+            frames: 'bullet',
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
             key: 'pulse',
             frames: 'green-thrust',
             frameRate: 8,
@@ -42,12 +49,10 @@ export class Game extends Scene
         this.ship = new Ship(this);
         this.add.existing(this.ship);
       
-        this.coins = new Coins(this);//this.add.sprite(200, 400, 'coin-spinning').play('spin');
+        this.coins = new Coins(this);
         this.coins.spawnCoin(200, 400);
 
         this.add.existing(this.coins);
-
-
 
         this.gameText = this.add.text(300, 200, 'Press Spacebar to Grab Coins', {
             fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
@@ -75,6 +80,11 @@ export class Game extends Scene
         if (time - this.coins.lastSpawnTime > Math.random() * 2000 + 2500) {
             this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
             this.coins.lastSpawnTime = time;
+        }
+
+        if (time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
+            this.ship.fire();
+            this.ship.lastFireTime = time;
         }
 
         this.ship.update(time, delta);
