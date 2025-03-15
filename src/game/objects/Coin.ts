@@ -1,4 +1,5 @@
 import { GameObjects } from "phaser";
+import { EventBus } from "../EventBus";
 export { Coin, Coins };
 
 class Coin extends GameObjects.Sprite
@@ -24,6 +25,13 @@ class Coin extends GameObjects.Sprite
             this.y += 30 * delta / 1000;
         }
 
+    }
+
+    captureSuccess()
+    {
+        console.log('capture success');
+        EventBus.emit('coinCaptured', this);
+        this.despawn();
     }
 
     despawn()

@@ -10,7 +10,6 @@ class Bullet extends Phaser.Physics.Arcade.Sprite
 
     fire (x: number, y: number)
     {
-        console.log("Firing");
         if (!this.body) return;
         this.body.reset(x, y);
 

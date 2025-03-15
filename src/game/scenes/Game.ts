@@ -2,6 +2,7 @@ import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 import { Coins } from '../objects/Coin';
 import { Ship } from '../objects/Ship';
+import { Hud } from '../objects/Hud';
 
 export class Game extends Scene
 {
@@ -11,6 +12,7 @@ export class Game extends Scene
     ship: Ship;
     coin: Phaser.GameObjects.Sprite;
     coins: Coins;
+    hud: Hud;
 
     constructor ()
     {
@@ -54,23 +56,40 @@ export class Game extends Scene
 
         this.add.existing(this.coins);
 
-        this.gameText = this.add.text(300, 200, 'Press Spacebar to Grab Coins', {
+        this.gameText = this.add.text(300, 200, 'Press C to enable thrust', {
             fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
             stroke: '#000000', strokeThickness: 6,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
+        this.hud = new Hud(this, 0, 0);
+        this.add.existing(this.hud);
+
         EventBus.emit('current-scene-ready', this);
+
+        this.input.keyboard?.on('keydown-C', () =>
+            {
+                this.ship.enableThrust();
+            });
 
         this.input.keyboard?.on('keydown-SPACE', () =>
             {
                 this.ship.capture(this.coins.getClosestCoin(this.ship.x, this.ship.y));
             });
+
+        EventBus.on('thrustEnabled', () => {
+            this.gameText.setText('Press Spacebar to Collect Coins');
+        });
     }
+
+    
 
     update (time: number, delta: number)
     {
-        this.background.tilePositionY -= 0.05;
+        // Scroll the background if thrust is enabled
+        if (this.ship.thrustEnabled) {
+            this.background.tilePositionY -= 0.05;
+        }
         this.coins.preUpdate(time, delta);
 
         if (!this.coins.lastSpawnTime) {
@@ -82,7 +101,7 @@ export class Game extends Scene
             this.coins.lastSpawnTime = time;
         }
 
-        if (time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
+        if (this.ship.gunEnabled && time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
             this.ship.fire();
             this.ship.lastFireTime = time;
         }

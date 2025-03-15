@@ -1,4 +1,6 @@
 import { Bullets } from './Bullet';
+import { EventBus } from '../EventBus';
+
 
 export { Ship };
 
@@ -6,18 +8,31 @@ class Ship extends Phaser.GameObjects.Container
 {
     heldItem: any;
     tractorBeam:  Phaser.GameObjects.Graphics = this.scene.add.graphics();
-    rateOfFire: number = 0.5; // in shots per second
-    lastFireTime: number = 0;
     bullets: Bullets;
 
+    // Initially these are all locked to the player
+    thrustEnabled: boolean = false;
+    tractorEnabled: boolean = false;
+    gunEnabled: boolean = false;
+    shieldEnabled: boolean = false;
+
+    rateOfFire: number = 0.5; // in shots per second
+    lastFireTime: number = 0;
+    
     constructor (scene: Phaser.Scene)
     {
         super(scene, 300, 700);
         this.add(scene.add.image(0, 0, 'player-ship'));
-        this.add(scene.add.sprite(-3, 30, 'green-thrust').play('pulse'));
-        this.add(scene.add.sprite(7, 30, 'green-thrust').play('pulse'));
 
         this.bullets = new Bullets(scene);
+    }
+
+    enableThrust(){
+        this.thrustEnabled = true;
+        this.add(this.scene.add.sprite(-3, 30, 'green-thrust').play('pulse'));
+        this.add(this.scene.add.sprite(7, 30, 'green-thrust').play('pulse'));
+        EventBus.emit('thrustEnabled');
+
     }
 
     capture(item: any)
@@ -57,7 +72,7 @@ class Ship extends Phaser.GameObjects.Container
                     this.tractorBeam.closePath();
                     this.tractorBeam.strokePath();
                 } else {
-                    this.heldItem.despawn();
+                    this.heldItem.captureSuccess();
                     this.heldItem = null;
                     this.tractorBeam.clear();
                 }
