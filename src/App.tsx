@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
+import { GameBike } from './game/GameBike';
+import { Game } from './game/scenes/Game';
 
 function App()
 {
@@ -23,6 +25,20 @@ function App()
             }
         }
     }
+
+    const startBike = () => {
+        if(phaserRef.current)
+            {
+            const scene = phaserRef.current.scene as Game;
+
+                if (scene)
+                {
+                    scene.bike.setPower(100);
+                }
+            }
+        }
+        
+    
 
     const moveSprite = () => {
 
@@ -85,7 +101,7 @@ function App()
             <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
             <div>
                 <div>
-                    <button className="button" onClick={changeScene}>Change Scene</button>
+                    <button className="button" onClick={startBike}>Start Biking</button>
                 </div>
                 <div>
                     <button disabled={canMoveSprite} className="button" onClick={moveSprite}>Toggle Movement</button>

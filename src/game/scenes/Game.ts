@@ -3,6 +3,8 @@ import { Scene } from 'phaser';
 import { Coins } from '../objects/Coin';
 import { Ship } from '../objects/Ship';
 import { Hud } from '../objects/Hud';
+import { GameBike } from '../GameBike';
+import { Asteroids } from '../objects/Asteroid';
 
 export class Game extends Scene
 {
@@ -12,7 +14,14 @@ export class Game extends Scene
     ship: Ship;
     coin: Phaser.GameObjects.Sprite;
     coins: Coins;
+    asteroids: Asteroids;
     hud: Hud;
+    bike: GameBike = new GameBike();
+
+    asteroidsActive: boolean = false;
+    coinsActive: boolean = false;
+
+    nextAsteroidIn: number = 0;
 
     constructor ()
     {
@@ -48,15 +57,23 @@ export class Game extends Scene
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'shipExplode',
+            frames: 'explosion',
+            frameRate: 16,
+            repeat: 0
+        });
+
         this.ship = new Ship(this);
         this.add.existing(this.ship);
       
         this.coins = new Coins(this);
-        this.coins.spawnCoin(200, 400);
+
+        this.asteroids = new Asteroids(this);
 
         this.add.existing(this.coins);
 
-        this.gameText = this.add.text(300, 200, 'Press C to enable thrust', {
+        this.gameText = this.add.text(300, 200, 'Start biking enable thrust', {
             fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
             stroke: '#000000', strokeThickness: 6,
             align: 'center'
@@ -65,20 +82,24 @@ export class Game extends Scene
         this.hud = new Hud(this, 0, 0);
         this.add.existing(this.hud);
 
+        this.physics.add.overlap(this.ship, this.asteroids, this.handleShipAsteroidCollision, undefined, this);
+
         EventBus.emit('current-scene-ready', this);
 
-        this.input.keyboard?.on('keydown-C', () =>
+        this.bike.on('bike-started', () =>
             {
                 this.ship.enableThrust();
             });
 
         this.input.keyboard?.on('keydown-SPACE', () =>
             {
-                this.ship.capture(this.coins.getClosestCoin(this.ship.x, this.ship.y));
+                this.ship.dodge();
+                //this.ship.capture(this.coins.getClosestCoin(this.ship.x, this.ship.y));
             });
 
         EventBus.on('thrustEnabled', () => {
-            this.gameText.setText('Press Spacebar to Collect Coins');
+            this.gameText.setText('Press Spacebar to Dodge Asteroids');
+            this.asteroidsActive = true;
         });
     }
 
@@ -91,26 +112,44 @@ export class Game extends Scene
             this.background.tilePositionY -= 0.05;
         }
         this.coins.preUpdate(time, delta);
+        this.asteroids.preUpdate(time, delta);
 
-        if (!this.coins.lastSpawnTime) {
-            this.coins.lastSpawnTime = time;
-        }
+        if (this.coinsActive){
+            if (!this.coins.lastSpawnTime) {
+                this.coins.lastSpawnTime = time;
+            }
 
-        if (time - this.coins.lastSpawnTime > Math.random() * 2000 + 2500) {
-            this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
-            this.coins.lastSpawnTime = time;
+            if (time - this.coins.lastSpawnTime > Math.random() * 2000 + 2500) {
+                this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
+                this.coins.lastSpawnTime = time;
+            }
         }
 
         if (this.ship.gunEnabled && time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
             this.ship.fire();
             this.ship.lastFireTime = time;
         }
+        
+        if (this.asteroidsActive) {
+            if (time - this.asteroids.lastSpawnTime > this.nextAsteroidIn){
+                let xValues = [];
+                for (let i = -2; i <= 2; i++) {
+                    xValues.push(this.ship.x + i *50);
+                }
+                let spawnX = Phaser.Math.RND.pick(xValues);
+                this.asteroids.spawnAsteroid(spawnX, 0);
+                this.asteroids.lastSpawnTime = time;
+                this.nextAsteroidIn = Phaser.Math.Between(2, 6) * 1000;
+            }
+        }
 
         this.ship.update(time, delta);
     }
 
-    changeScene ()
+    handleShipAsteroidCollision(ship: any, asteroid: any)
     {
-        // this.scene.start('GameOver');
+        this.ship.blowUp();
+        //this.scene.start('GameOver');
     }
+
 }

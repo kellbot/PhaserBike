@@ -51,7 +51,7 @@ class Coins extends Phaser.GameObjects.Group
 
         this.createMultiple({
             classType: Coin,
-            frameQuantity: 10,
+            quantity: 10,
             active: false,
             visible: false,
             key: 'coin-spinning',
