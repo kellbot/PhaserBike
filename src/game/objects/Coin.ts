@@ -79,7 +79,7 @@ class Coins extends Phaser.GameObjects.Group
             const coin = child as Coin;
             if (coin.active && coin.visible)
             {
-                console.log(coin.x, coin.y);
+               
                 const dx = x - coin.x;
                 const dy = y - coin.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);

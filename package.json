@@ -23,11 +23,12 @@
     ],
     "scripts": {
         "dev": "node log.js dev & next dev -p 8080",
-        "build": "node log.js build & next build",
+        "build": "node log.js build & NODE_ENV=production next build",
         "dev-nolog": "next dev -p 8080",
         "build-nolog": "next build"
     },
     "dependencies": {
+        "@types/web-bluetooth": "^0.0.21",
         "next": "14.2.3",
         "phaser": "^3.88.2",
         "react": "^18",

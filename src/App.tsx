@@ -3,9 +3,16 @@ import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
 import { GameBike } from './game/GameBike';
 import { Game } from './game/scenes/Game';
+import { Bluetooth } from './bluetooth/heart-rate';
 
 function App()
 {
+    const [device, setDevice] = useState<BluetoothDevice | null>(null);
+    const [characteristic, setCharacteristic] = useState<BluetoothRemoteGATTCharacteristic | null>(null);
+    const [server, setServer] = useState<BluetoothRemoteGATTServer | null>(null);
+    const [service, setService] = useState<BluetoothRemoteGATTService | null>(null);
+
+
     // The sprite can only be moved in the MainMenu Scene
     const [canMoveSprite, setCanMoveSprite] = useState(true);
 
@@ -105,17 +112,19 @@ function App()
                     <button className="button" onClick={startBike}>Start Biking</button>
                 </div>
                 <div>
-                    <button disabled={canMoveSprite} className="button" onClick={moveSprite}>Toggle Movement</button>
-                </div>
-                <div className="spritePosition">Sprite Position:
-                    <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
-                </div>
-                <div>
-                    <button className="button" onClick={addSprite}>Add New Sprite</button>
-                </div>
+            
+                <Bluetooth
+                    setDevice={setDevice}
+                    setCharacteristic={setCharacteristic}
+                    setServer={setServer}
+                    setService={setService}
+                />
+            </div>
+                
             </div>
         </div>
     )
 }
+
 
 export default App

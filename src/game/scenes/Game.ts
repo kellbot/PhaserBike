@@ -8,6 +8,9 @@ import { Asteroids } from '../objects/Asteroid';
 
 export class Game extends Scene
 {
+
+    private tutorialStep: number = 0;
+
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.TileSprite;
     gameText: Phaser.GameObjects.Text;
@@ -77,7 +80,8 @@ export class Game extends Scene
             this.gameText = this.add.text(300, 200, 'Start biking to enable thrust', {
                 fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
                 stroke: '#000000', strokeThickness: 6,
-                align: 'center'
+                align: 'center',
+                wordWrap: { width: 500, useAdvancedWrap: true }
             }).setOrigin(0.5).setDepth(100);
         }
 
@@ -100,7 +104,12 @@ export class Game extends Scene
                     this.coinsActive = true;
                     this.coins.lastSpawnTime = this.time.now;
                     this.setTutorialText('Press V to switch to tractor beam');
+                    this.tutorialStep = 3;
                     this.ship.enableTool('tractor');
+                }
+                if (this.tutorialStep == 3 && this.ship.activeTool == 'tractor') {
+                    this.setTutorialText('Press V to switch between dodge and tractor beam');
+                    this.tutorialStep = 4;
                 }
             });
 
@@ -117,6 +126,13 @@ export class Game extends Scene
             this.ship.enableTool('dodge');
             this.asteroids.spawnAsteroid(this.ship.x, 0);
         });
+
+        EventBus.on('heart-rate-update', (heartRate: number) => {
+            if (this.scene.isActive('Game')) {
+             this.hud.setHeartRate(heartRate);
+            }
+        });
+
         EventBus.emit('current-scene-ready', this);
 
     }
@@ -161,7 +177,7 @@ export class Game extends Scene
   
                 this.asteroids.spawnAsteroid(spawnX, 0);
                 this.asteroids.lastSpawnTime = time;
-                this.nextAsteroidIn = Phaser.Math.Between(2, 5) * 1000;
+                this.nextAsteroidIn = Phaser.Math.Between(1, 5) * 1000;
             }
         }
 

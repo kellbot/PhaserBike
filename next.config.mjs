@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'export',
-    basePath: '/PhaserBike',
+    basePath: process.env.NODE_ENV === 'production' ? '/PhaserBike' : '',
     images: {
         unoptimized: true
     },
