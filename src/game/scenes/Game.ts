@@ -73,18 +73,19 @@ export class Game extends Scene
 
         this.add.existing(this.coins);
 
-        this.gameText = this.add.text(300, 200, 'Start biking enable thrust', {
-            fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 6,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
+        if (this.bike.power == 0) {
+            this.gameText = this.add.text(300, 200, 'Start biking to enable thrust', {
+                fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
+                stroke: '#000000', strokeThickness: 6,
+                align: 'center'
+            }).setOrigin(0.5).setDepth(100);
+        }
 
         this.hud = new Hud(this, 0, 0);
         this.add.existing(this.hud);
 
         this.physics.add.overlap(this.ship, this.asteroids, this.handleShipAsteroidCollision, undefined, this);
 
-        EventBus.emit('current-scene-ready', this);
 
         this.bike.on('bike-started', () =>
             {
@@ -93,14 +94,31 @@ export class Game extends Scene
 
         this.input.keyboard?.on('keydown-SPACE', () =>
             {
-                this.ship.dodge();
-                //this.ship.capture(this.coins.getClosestCoin(this.ship.x, this.ship.y));
+
+                this.ship.useActiveTool(this.coins.getClosestCoin(this.ship.x, this.ship.y));
+                if (!this.coinsActive) {
+                    this.coinsActive = true;
+                    this.coins.lastSpawnTime = this.time.now;
+                    this.setTutorialText('Press V to switch to tractor beam');
+                    this.ship.enableTool('tractor');
+                }
+            });
+
+        this.input.keyboard?.on('keydown-V', () =>
+            {
+                this.ship.cycleTools()
             });
 
         EventBus.on('thrustEnabled', () => {
-            this.gameText.setText('Press Spacebar to Dodge Asteroids');
+            this.setTutorialText('Press Spacebar to Dodge Asteroids');
+            this.asteroids.lastSpawnTime = this.time.now;
+            this.nextAsteroidIn = 5000;
             this.asteroidsActive = true;
+            this.ship.enableTool('dodge');
+            this.asteroids.spawnAsteroid(this.ship.x, 0);
         });
+        EventBus.emit('current-scene-ready', this);
+
     }
 
     
@@ -125,21 +143,25 @@ export class Game extends Scene
             }
         }
 
-        if (this.ship.gunEnabled && time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
+        if (this.ship.isToolEnabled('gun') && time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
             this.ship.fire();
             this.ship.lastFireTime = time;
         }
         
         if (this.asteroidsActive) {
             if (time - this.asteroids.lastSpawnTime > this.nextAsteroidIn){
+   
                 let xValues = [];
-                for (let i = -2; i <= 2; i++) {
+                for (let i = -1; i <= 1; i++) {
                     xValues.push(this.ship.x + i *50);
                 }
+
+
                 let spawnX = Phaser.Math.RND.pick(xValues);
+  
                 this.asteroids.spawnAsteroid(spawnX, 0);
                 this.asteroids.lastSpawnTime = time;
-                this.nextAsteroidIn = Phaser.Math.Between(2, 6) * 1000;
+                this.nextAsteroidIn = Phaser.Math.Between(2, 5) * 1000;
             }
         }
 
@@ -150,6 +172,11 @@ export class Game extends Scene
     {
         this.ship.blowUp();
         //this.scene.start('GameOver');
+    }
+
+    setTutorialText(text: string)
+    {
+        this.gameText.setText(text);
     }
 
 }

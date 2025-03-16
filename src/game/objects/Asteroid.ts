@@ -2,6 +2,8 @@ export { Asteroid, Asteroids };
 
 class Asteroid extends Phaser.GameObjects.Sprite
 {
+    speed: number = 200;
+
     constructor (scene: Phaser.Scene, x: number, y: number)
     {
         super(scene, x, y, 'small-asteroid');
@@ -22,7 +24,7 @@ class Asteroid extends Phaser.GameObjects.Sprite
         {
             this.setActive(false).setVisible(false);
         } else {
-            this.y += 50 * delta / 1000;
+            this.y += this.speed * delta / 1000;
         }
     }
 

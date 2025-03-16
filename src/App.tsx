@@ -26,17 +26,18 @@ function App()
         }
     }
 
-    const startBike = () => {
+    const startBike = (event: React.MouseEvent<HTMLButtonElement>) => {
         if(phaserRef.current)
-            {
+        {
             const scene = phaserRef.current.scene as Game;
 
-                if (scene)
-                {
-                    scene.bike.setPower(100);
-                }
+            if (scene)
+            {
+                scene.bike.setPower(100);
             }
         }
+        event.currentTarget.blur();
+    }
         
     
 

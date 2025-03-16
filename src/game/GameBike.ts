@@ -19,7 +19,6 @@ class GameBike extends  Phaser.Events.EventEmitter
         setInterval(() => {
             this.power += Math.floor(Math.random() * 21) - 10;
             this.emit('power-changed', this.power);
-            console.log('power changed to', this.power);
         }, 3000);
     }
 }
