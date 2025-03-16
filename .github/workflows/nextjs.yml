@@ -69,13 +69,15 @@ jobs:
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
+      
       - name: Install TypeScript dependencies
-        run: npm install --save-dev typescript @types/react @types/node @types/web-bluetooth
+        run: ${{ steps.detect-package-manager.outputs.runner }} install --save-dev typescript @types/react @types/node @types/web-bluetooth
            
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
         env:
           NODE_ENV: 'production'
+
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
 
