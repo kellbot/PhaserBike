@@ -5,8 +5,8 @@ import { EventBus } from '../EventBus';
 export { Ship };
 
 
-const DODGE_TOOL: string = 'dodge';
-const TRACTOR_TOOL: string = 'tractor';
+const DODGE_TOOL: string = 'Dodge';
+const TRACTOR_TOOL: string = 'Tractor Beam';
 const GUN_TOOL:string = 'gun';
 const SHIELD_TOOL:string = 'shield';
 
@@ -79,6 +79,8 @@ class Ship extends Phaser.GameObjects.Container
         this.add(rightThrust);
 
         this.thrustSprites.push(leftThrust, rightThrust);
+        this.activateTool(DODGE_TOOL);
+        this.enableTool(DODGE_TOOL);
         EventBus.emit('thrustEnabled');
 
     }
@@ -94,6 +96,10 @@ class Ship extends Phaser.GameObjects.Container
         this.thrustSprites.forEach(thrust => thrust.setVisible(visible));
     }
 
+    activateTool(tool_name: string) {
+        this.activeTool = tool_name;
+    }
+
     cycleTools() {
         const toolKeys = Object.keys(this.tools);
         let currentIndex = toolKeys.indexOf(this.activeTool);
@@ -107,8 +113,8 @@ class Ship extends Phaser.GameObjects.Container
             currentIndex = (currentIndex + 1) % toolKeys.length;
         } while (!this.tools[toolKeys[currentIndex]].enabled);
 
-        this.activeTool = toolKeys[currentIndex];
-        console.log('%s enabled', this.activeTool);
+        this.activateTool(toolKeys[currentIndex]);
+        EventBus.emit('active-tool-changed', this.activeTool);
     }
 
 

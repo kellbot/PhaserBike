@@ -5,6 +5,7 @@ class Hud extends Phaser.GameObjects.Container {
 
     coinDisplay: Phaser.GameObjects.Text;
     heartRateDisplay: Phaser.GameObjects.Text;
+    toolDisplay: Phaser.GameObjects.Text;
     coinCount: number = 0;
 
 
@@ -27,7 +28,14 @@ class Hud extends Phaser.GameObjects.Container {
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
+        this.toolDisplay = scene.add.text(300, 50, 'Tool: None', {
+            fontFamily: 'Arial Black', fontSize: 20, color: '#ffffff',  
+            stroke: '#000000', strokeThickness: 6,
+            align: 'center'
+        }).setOrigin(0.5).setDepth(100);
+
         EventBus.on('coinCaptured', this.updateCoinDisplay, this);
+        EventBus.on('active-tool-changed', this.updateToolDisplay, this);
     }
 
     updateCoinDisplay(coin: any) {
@@ -35,6 +43,9 @@ class Hud extends Phaser.GameObjects.Container {
         this.coinDisplay.setText(this.coinCount.toString().padStart(6, '0'));
     }
 
+    updateToolDisplay(tool: string) {
+        this.toolDisplay.setText('Tool: ' + tool);
+    }
     setHeartRate(heartRate: number) {
         this.heartRateDisplay.setText('❤️ '+ heartRate.toString());
     }

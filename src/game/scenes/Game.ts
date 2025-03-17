@@ -26,6 +26,8 @@ export class Game extends Scene
 
     nextAsteroidIn: number = 0;
 
+    playerHeartRate: number = 0;
+
     constructor ()
     {
         super('Game');
@@ -76,8 +78,9 @@ export class Game extends Scene
 
         this.add.existing(this.coins);
 
-        if (this.bike.power == 0) {
-            this.gameText = this.add.text(300, 200, 'Start biking to enable thrust', {
+        if (this.playerHeartRate == 0) {
+            this.tutorialStep = 1;
+            this.gameText = this.add.text(300, 200, 'Connect Heart Rate Monitor to Start', {
                 fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
                 stroke: '#000000', strokeThickness: 6,
                 align: 'center',
@@ -91,11 +94,6 @@ export class Game extends Scene
         this.physics.add.overlap(this.ship, this.asteroids, this.handleShipAsteroidCollision, undefined, this);
 
 
-        this.bike.on('bike-started', () =>
-            {
-                this.ship.enableThrust();
-            });
-
         this.input.keyboard?.on('keydown-SPACE', () =>
             {
 
@@ -105,9 +103,9 @@ export class Game extends Scene
                     this.coins.lastSpawnTime = this.time.now;
                     this.setTutorialText('Press V to switch to tractor beam');
                     this.tutorialStep = 3;
-                    this.ship.enableTool('tractor');
+                    this.ship.enableTool('Tractor Beam');
                 }
-                if (this.tutorialStep == 3 && this.ship.activeTool == 'tractor') {
+                if (this.tutorialStep == 3 && this.ship.activeTool == 'Tractor Beam') {
                     this.setTutorialText('Press V to switch between dodge and tractor beam');
                     this.tutorialStep = 4;
                 }
@@ -119,17 +117,21 @@ export class Game extends Scene
             });
 
         EventBus.on('thrustEnabled', () => {
-            this.setTutorialText('Press Spacebar to Dodge Asteroids');
             this.asteroids.lastSpawnTime = this.time.now;
             this.nextAsteroidIn = 5000;
             this.asteroidsActive = true;
-            this.ship.enableTool('dodge');
             this.asteroids.spawnAsteroid(this.ship.x, 0);
         });
 
         EventBus.on('heart-rate-update', (heartRate: number) => {
+            if (this.tutorialStep == 1) {
+                this.tutorialStep = 2;
+                this.ship.enableThrust();
+                this.setTutorialText('Press Spacebar to Dodge Asteroids');
+            }
             if (this.scene.isActive('Game')) {
-             this.hud.setHeartRate(heartRate);
+                this.playerHeartRate = heartRate;
+                this.hud.setHeartRate(heartRate);
             }
         });
 
