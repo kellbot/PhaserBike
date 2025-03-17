@@ -57,7 +57,7 @@ const HeartRateService: React.FC = () => {
 
   return (
     <>
-      <button className="button" onClick={connectToDevice}>Connect to Heart Rate Monitor</button>
+      <button className="button" ref={buttonRef} onClick={connectToDevice}>Connect to Heart Rate Monitor</button>
       <div>
         <p>Heart Rate: <span id="heart-rate-value">{heartRate !== null ? heartRate : 'N/A'}</span></p>
       </div>
