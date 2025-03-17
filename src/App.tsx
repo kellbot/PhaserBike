@@ -62,7 +62,7 @@ function App()
             <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
             <div>
                 <div>
-                    <HeartRateService />
+                <HeartRateService />
                 </div>
                 
                 

@@ -119,7 +119,7 @@ export class Game extends Scene
         EventBus.on('thrustEnabled', () => {
             this.asteroids.lastSpawnTime = this.time.now;
             this.nextAsteroidIn = 5000;
-            this.asteroidsActive = true;
+            // this.asteroidsActive = true;
             this.asteroids.spawnAsteroid(this.ship.x, 0);
         });
 

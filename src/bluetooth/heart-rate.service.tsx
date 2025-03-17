@@ -36,6 +36,7 @@ const HeartRateService: React.FC = () => {
     device.addEventListener('gattserverdisconnected', onDisconnected);
 
     buttonRef.current?.blur();
+    
   };
 
   const onDisconnected = (event: Event) => {
