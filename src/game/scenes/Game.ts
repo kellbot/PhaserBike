@@ -5,11 +5,10 @@ import { Ship } from '../objects/Ship';
 import { Hud } from '../objects/Hud';
 import { GameBike } from '../GameBike';
 import { Asteroids } from '../objects/Asteroid';
+import { TutorialManager, TutorialStep } from '../managers/TutorialManager'
 
 export class Game extends Scene
 {
-
-    private tutorialStep: number = 0;
 
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.TileSprite;
@@ -27,6 +26,8 @@ export class Game extends Scene
     nextAsteroidIn: number = 0;
 
     playerHeartRate: number = 0;
+    tutorialManager: TutorialManager;
+    activeTutorial: TutorialStep;
 
     constructor ()
     {
@@ -78,15 +79,16 @@ export class Game extends Scene
 
         this.add.existing(this.coins);
 
-        if (this.playerHeartRate == 0) {
-            this.tutorialStep = 1;
-            this.gameText = this.add.text(300, 200, 'Connect Heart Rate Monitor to Start', {
+        this.tutorialManager = new TutorialManager();
+        
+        
+            const tutorialText = this.tutorialManager.activeStep ? this.tutorialManager.activeStep.text : 'Default Text';
+            this.gameText = this.add.text(300, 200, tutorialText, {
                 fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
                 stroke: '#000000', strokeThickness: 6,
                 align: 'center',
                 wordWrap: { width: 500, useAdvancedWrap: true }
             }).setOrigin(0.5).setDepth(100);
-        }
 
         this.hud = new Hud(this, 0, 0);
         this.add.existing(this.hud);
@@ -102,13 +104,10 @@ export class Game extends Scene
                     this.coinsActive = true;
                     this.coins.lastSpawnTime = this.time.now;
                     this.setTutorialText('Press V to switch to tractor beam');
-                    this.tutorialStep = 3;
+
                     this.ship.enableTool('Tractor Beam');
                 }
-                if (this.tutorialStep == 3 && this.ship.activeTool == 'Tractor Beam') {
-                    this.setTutorialText('Press V to switch between dodge and tractor beam');
-                    this.tutorialStep = 4;
-                }
+
             });
 
         this.input.keyboard?.on('keydown-V', () =>
@@ -124,11 +123,7 @@ export class Game extends Scene
         });
 
         EventBus.on('heart-rate-update', (heartRate: number) => {
-            if (this.tutorialStep == 1) {
-                this.tutorialStep = 2;
-                this.ship.enableThrust();
-                this.setTutorialText('Press Spacebar to Dodge Asteroids');
-            }
+
             if (this.scene.isActive('Game')) {
                 this.playerHeartRate = heartRate;
                 this.hud.setHeartRate(heartRate);
