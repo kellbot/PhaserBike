@@ -79,16 +79,18 @@ export class Game extends Scene
 
         this.add.existing(this.coins);
 
-        this.tutorialManager = new TutorialManager();
+        this.tutorialManager = new TutorialManager(this);
         
         
-            const tutorialText = this.tutorialManager.activeStep ? this.tutorialManager.activeStep.text : 'Default Text';
+        const tutorialText = this.tutorialManager.activeStep ? this.tutorialManager.activeStep.text : 'Default Text';
             this.gameText = this.add.text(300, 200, tutorialText, {
                 fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
                 stroke: '#000000', strokeThickness: 6,
                 align: 'center',
                 wordWrap: { width: 500, useAdvancedWrap: true }
             }).setOrigin(0.5).setDepth(100);
+
+        EventBus.on('tutorial-updated', this.setTutorialText, this);
 
         this.hud = new Hud(this, 0, 0);
         this.add.existing(this.hud);
@@ -103,7 +105,6 @@ export class Game extends Scene
                 if (!this.coinsActive) {
                     this.coinsActive = true;
                     this.coins.lastSpawnTime = this.time.now;
-                    this.setTutorialText('Press V to switch to tractor beam');
 
                     this.ship.enableTool('Tractor Beam');
                 }
@@ -115,14 +116,10 @@ export class Game extends Scene
                 this.ship.cycleTools()
             });
 
-        EventBus.on('thrustEnabled', () => {
-            this.asteroids.lastSpawnTime = this.time.now;
-            this.nextAsteroidIn = 5000;
-            // this.asteroidsActive = true;
-            this.asteroids.spawnAsteroid(this.ship.x, 0);
-        });
 
         EventBus.on('heart-rate-update', (heartRate: number) => {
+
+            if (!this.ship.thrustEnabled) this.ship.enableThrust();
 
             if (this.scene.isActive('Game')) {
                 this.playerHeartRate = heartRate;
@@ -187,9 +184,9 @@ export class Game extends Scene
         //this.scene.start('GameOver');
     }
 
-    setTutorialText(text: string)
+    setTutorialText(step: TutorialStep)
     {
-        this.gameText.setText(text);
+        this.gameText.setText(step.text);
     }
 
 }

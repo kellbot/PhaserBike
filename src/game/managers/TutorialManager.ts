@@ -1,4 +1,5 @@
 import { EventBus  } from "../EventBus";
+import { Game } from "../scenes/Game";
 
 export { TutorialManager, TutorialStep };
 
@@ -8,8 +9,10 @@ const TUTORIAL_DATA =  [
             completed: false,
             priority: 1,
             completionEvent: 'heart-rate-update',
-            onComplete: function() {
-                console.log('HRM Connected');
+            // I feel like maybe this logic doesn't belong here
+            onComplete: function(game: Game) {
+                console.log("Launching a coin");
+                game.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
             }
         },
         {
@@ -26,21 +29,22 @@ const TUTORIAL_DATA =  [
 class TutorialManager {
     
     tutorialSteps: TutorialStep[] = [];
+    game: Game;
 
     activeStep: TutorialStep | null;
 
-    constructor() {
+    constructor(game: Game) {
         for (let stepData of TUTORIAL_DATA) {
             this.tutorialSteps.push(new TutorialStep(stepData, this));
         }
+        this.game = game;
 
-
-        this.activeStep = this.getNextStep();
+        this.advanceTutorial();
     }
 
-    handleStepCompletion(){
-        console.log("Step completed");
+    advanceTutorial(){
         this.activeStep = this.getNextStep();
+        EventBus.emit('tutorial-updated', this.activeStep);
         console.log(this.activeStep);
     }
 
@@ -60,7 +64,7 @@ class TutorialStep {
     completed: boolean;
     priority: number;
     completionEvent: string;
-    onComplete: Function;
+    onComplete: (game: Game) => void;
     tutorialManager: TutorialManager;
 
     constructor(stepData: any, tutorialManager: TutorialManager) {
@@ -77,8 +81,8 @@ class TutorialStep {
     complete() {
         this.completed = true;
         EventBus.off(this.completionEvent);
-        this.onComplete();
-        this.tutorialManager.handleStepCompletion();
+        this.onComplete(this.tutorialManager.game);
+        this.tutorialManager.advanceTutorial();
     }
         
 }
