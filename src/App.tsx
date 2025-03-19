@@ -1,9 +1,6 @@
 import { useRef, useState } from 'react';
 import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
-import { GameBike } from './game/GameBike';
-import { Game } from './game/scenes/Game';
-import HeartRateService from './bluetooth/heart-rate.service';
 
 function App()
 {
@@ -29,19 +26,7 @@ function App()
         }
     }
 
-    const startBike = (event: React.MouseEvent<HTMLButtonElement>) => {
-        if(phaserRef.current)
-        {
-            const scene = phaserRef.current.scene as Game;
-
-            if (scene)
-            {
-                scene.bike.setPower(100);
-            }
-        }
-        event.currentTarget.blur();
-    }
-        
+       
     
     // Event emitted from the PhaserGame component
     const currentScene = (scene: Phaser.Scene) => {
@@ -61,9 +46,7 @@ function App()
         <div id="app">
             <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
             <div>
-                <div>
-                <HeartRateService />
-                </div>
+                
                 
                 
             </div>

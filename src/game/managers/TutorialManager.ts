@@ -8,7 +8,7 @@ const TUTORIAL_DATA =  [
             text: 'Connect Heart Rate Monitor or Enable HRM Simulator',
             completed: false,
             priority: 1,
-            completionEvent: 'heart-rate-update',
+            completionEvent: 'newHeartRate',
             // I feel like maybe this logic doesn't belong here
             onComplete: function(game: Game) {
                 console.log("Launching a coin");
@@ -16,7 +16,7 @@ const TUTORIAL_DATA =  [
             }
         },
         {
-            text: 'Use the tractor beam to capture a coin',
+            text: 'Press spacebar to use the tractor beam to capture a coin',
             completed: false,
             priority: 2,
             completionEvent: 'coinCaptured',
@@ -75,12 +75,12 @@ class TutorialStep {
         this.onComplete = stepData.onComplete;
         this.tutorialManager = tutorialManager;
         
-        EventBus.on(this.completionEvent, this.complete, this);
+        EventBus.once(this.completionEvent, this.complete, this);
     }
 
     complete() {
         this.completed = true;
-        EventBus.off(this.completionEvent);
+        // EventBus.off(this.completionEvent);
         this.onComplete(this.tutorialManager.game);
         this.tutorialManager.advanceTutorial();
     }

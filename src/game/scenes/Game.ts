@@ -116,18 +116,10 @@ export class Game extends Scene
                 this.ship.cycleTools()
             });
 
-
-        EventBus.on('heart-rate-update', (heartRate: number) => {
-
-            if (!this.ship.thrustEnabled) this.ship.enableThrust();
-
-            if (this.scene.isActive('Game')) {
-                this.playerHeartRate = heartRate;
-                this.hud.setHeartRate(heartRate);
-            }
-        });
-
+            
+        EventBus.on('newHeartRate', this.handleHeartRateUpdate, this);
         EventBus.emit('current-scene-ready', this);
+
 
     }
 
@@ -186,7 +178,15 @@ export class Game extends Scene
 
     setTutorialText(step: TutorialStep)
     {
-        this.gameText.setText(step.text);
+        if (step?.text) this.gameText.setText(step.text);
     }
 
+    handleHeartRateUpdate(heartRate: number) {
+        
+        if (!this.ship.thrustEnabled) this.ship.enableThrust();
+
+        this.playerHeartRate = heartRate;
+        this.hud.setHeartRate(heartRate);
+
+    }
 }

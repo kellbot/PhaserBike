@@ -79,8 +79,8 @@ class Ship extends Phaser.GameObjects.Container
         this.add(rightThrust);
 
         this.thrustSprites.push(leftThrust, rightThrust);
-        this.activateTool(DODGE_TOOL);
-        this.enableTool(DODGE_TOOL);
+        this.activateTool(TRACTOR_TOOL);
+        this.enableTool(TRACTOR_TOOL);
         EventBus.emit('thrustEnabled');
 
     }
