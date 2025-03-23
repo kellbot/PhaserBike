@@ -35,11 +35,13 @@ export class Preloader extends Scene
         this.load.image('logo', 'logo.png');
         this.load.image('player-ship', 'ship_1.png');
         this.load.image('space-background', 'space-bg-1.png');
+        this.load.image('planet', 'planet.png');
         this.load.spritesheet('small-asteroid', 'asteroids.png', { frameWidth: 40, frameHeight: 48} );
         this.load.spritesheet('bullet', 'shot.png', { frameWidth: 48, frameHeight: 48} );
         this.load.spritesheet('green-thrust', 'turbo_green.png', { frameWidth: 48, frameHeight: 48} );
         this.load.spritesheet('coin-spinning', 'coin_anim.png', { frameWidth: 32, frameHeight: 32} );
         this.load.spritesheet('explosion', 'explosion.png', { frameWidth: 48, frameHeight: 48} );
+    
     }
 
     create ()

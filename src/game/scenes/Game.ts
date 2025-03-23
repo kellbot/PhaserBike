@@ -2,10 +2,11 @@ import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 import { Coins } from '../objects/Coin';
 import { Ship } from '../objects/Ship';
-import { Hud } from '../objects/Hud';
-import { GameBike } from '../GameBike';
+import { Planet } from '../objects/Planet';
+import { HudScene } from './components/Hud';
 import { Asteroids } from '../objects/Asteroid';
-import { TutorialManager, TutorialStep } from '../managers/TutorialManager'
+import { ProgressionManager, TutorialStep } from '../managers/ProgressionManager'
+import { playerManager } from '../managers/PlayerManager';
 
 export class Game extends Scene
 {
@@ -17,16 +18,16 @@ export class Game extends Scene
     coin: Phaser.GameObjects.Sprite;
     coins: Coins;
     asteroids: Asteroids;
-    hud: Hud;
-    bike: GameBike = new GameBike();
 
     asteroidsActive: boolean = false;
     coinsActive: boolean = false;
 
+    planet: Planet;
+
     nextAsteroidIn: number = 0;
 
     playerHeartRate: number = 0;
-    tutorialManager: TutorialManager;
+    tutorialManager: ProgressionManager;
     activeTutorial: TutorialStep;
 
     constructor ()
@@ -41,6 +42,9 @@ export class Game extends Scene
         this.camera.setBackgroundColor(0x00ff00);
 
         this.background = this.add.tileSprite(0,0, 600, 1600, 'space-background').setOrigin(0).setScrollFactor(0,1);
+
+        // Start the HudScene and keep it active
+        this.scene.launch('HudScene');
 
         this.anims.create({
             key: 'bulletPulse',
@@ -79,10 +83,23 @@ export class Game extends Scene
 
         this.add.existing(this.coins);
 
-        this.tutorialManager = new TutorialManager(this);
+
+        // Set up the shop planet
+        this.planet = new Planet(this, 300, 300 )
+        this.add.existing(this.planet);
+        this.planet.setVisible(false);
+        this.planet.setActive(false);
+
+        this.physics.add.overlap(this.ship, this.planet, this.handleShipPlanetCollision, undefined, this)
+
+
+        // Initialize the progression manager
+        this.tutorialManager = new ProgressionManager(this);
         
+
+
         
-        const tutorialText = this.tutorialManager.activeStep ? this.tutorialManager.activeStep.text : 'Default Text';
+        const tutorialText = this.tutorialManager.activeStep ? this.tutorialManager.activeStep.getText() : '';
             this.gameText = this.add.text(300, 200, tutorialText, {
                 fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
                 stroke: '#000000', strokeThickness: 6,
@@ -90,13 +107,9 @@ export class Game extends Scene
                 wordWrap: { width: 500, useAdvancedWrap: true }
             }).setOrigin(0.5).setDepth(100);
 
-        EventBus.on('tutorial-updated', this.setTutorialText, this);
 
-        this.hud = new Hud(this, 0, 0);
-        this.add.existing(this.hud);
 
         this.physics.add.overlap(this.ship, this.asteroids, this.handleShipAsteroidCollision, undefined, this);
-
 
         this.input.keyboard?.on('keydown-SPACE', () =>
             {
@@ -116,8 +129,27 @@ export class Game extends Scene
                 this.ship.cycleTools()
             });
 
-            
-        EventBus.on('newHeartRate', this.handleHeartRateUpdate, this);
+
+        EventBus.on('tutorial-updated', this.setTutorialText, this);
+        EventBus.on('newHeartRate', () =>
+        {
+            if (!this.ship.thrustEnabled) this.ship.enableThrust();
+        }
+        );
+        EventBus.on('coinCaptured', function() {
+            playerManager.addCoins(1);
+        } );
+        EventBus.on('launchShop', () =>
+        {
+            this.planet.setActive(true);
+            this.planet.setVisible(true);
+
+
+        }
+        );
+
+
+
         EventBus.emit('current-scene-ready', this);
 
 
@@ -139,7 +171,7 @@ export class Game extends Scene
                 this.coins.lastSpawnTime = time;
             }
 
-            if (time - this.coins.lastSpawnTime > Math.random() * 2000 + 2500) {
+            if (time - this.coins.lastSpawnTime > Math.random() * 3000 + 2500) {
                 this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
                 this.coins.lastSpawnTime = time;
             }
@@ -167,13 +199,29 @@ export class Game extends Scene
             }
         }
 
+        this.planet?.update(time, delta);
         this.ship.update(time, delta);
+    }
+
+    // Remove event listeners when the scene is paused
+    pause() {
+        EventBus.off('tutorial-updated', this.setTutorialText, this);
+    }
+
+    // Remove event listeners when the scene is stopped
+    shutdown() {
+        EventBus.off('tutorial-updated', this.setTutorialText, this);
+    }
+
+    // I don't know why it complains if I specify Ship and Planet types
+    handleShipPlanetCollision(ship: any, planet: any){
+        this.scene.pause();
+        this.scene.start('Shop');
     }
 
     handleShipAsteroidCollision(ship: any, asteroid: any)
     {
         this.ship.blowUp();
-        //this.scene.start('GameOver');
     }
 
     setTutorialText(step: TutorialStep)
@@ -181,12 +229,4 @@ export class Game extends Scene
         if (step?.text) this.gameText.setText(step.text);
     }
 
-    handleHeartRateUpdate(heartRate: number) {
-        
-        if (!this.ship.thrustEnabled) this.ship.enableThrust();
-
-        this.playerHeartRate = heartRate;
-        this.hud.setHeartRate(heartRate);
-
-    }
 }

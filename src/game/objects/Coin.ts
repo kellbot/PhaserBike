@@ -29,7 +29,6 @@ class Coin extends GameObjects.Sprite
 
     captureSuccess()
     {
-        console.log('capture success');
         EventBus.emit('coinCaptured', this);
         this.despawn();
     }

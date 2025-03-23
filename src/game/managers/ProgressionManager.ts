@@ -1,32 +1,60 @@
 import { EventBus  } from "../EventBus";
 import { Game } from "../scenes/Game";
+import { playerManager } from "./PlayerManager";
 
-export { TutorialManager, TutorialStep };
+export { ProgressionManager, TutorialStep };
+
 
 const TUTORIAL_DATA =  [
         {
-            text: 'Connect Heart Rate Monitor or Enable HRM Simulator',
-            completed: false,
+            text: 'Awaiting Heart Rate Data',
             priority: 1,
             completionEvent: 'newHeartRate',
             // I feel like maybe this logic doesn't belong here
             onComplete: function(game: Game) {
-                console.log("Launching a coin");
                 game.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
+                return true;
             }
         },
         {
             text: 'Press spacebar to use the tractor beam to capture a coin',
-            completed: false,
             priority: 2,
             completionEvent: 'coinCaptured',
             onComplete: function() {
-                console.log('Coin captured');
+                return true;
             }
         },
+        // This is a silent step which launches the shop planet after the first coin is captured
+        {
+            completionEvent: 'coinCaptured',
+            onComplete: function() {
+                console.log("Launching shop");
+                EventBus.emit('launchShop');
+            }
+        },
+        {
+            text: 'Collect coins',
+            priority: 3,
+            completionEvent: 'coinCaptured',
+            onComplete: function() {
+                if (playerManager.coinCount >= 5){
+                    console.log("Got 5 coins");
+                    return true;
+                } 
+                return false;
+            }
+        },
+        {
+            text: 'Profit',
+            priority: 4,
+            completionEvent: 'boogers',
+            onComplete: function() {
+                return true;
+            }
+        }
     ];
 
-class TutorialManager {
+class ProgressionManager {
     
     tutorialSteps: TutorialStep[] = [];
     game: Game;
@@ -51,7 +79,7 @@ class TutorialManager {
     getNextStep(): TutorialStep | null {
         this.tutorialSteps.sort((a, b) => a.priority - b.priority);
         for (let step of this.tutorialSteps) {
-            if (!step.completed) {
+            if (!step.completed && step.text) {
                 return step;
             }
         }
@@ -60,14 +88,14 @@ class TutorialManager {
 }
 
 class TutorialStep {
-    text: string;
+    text: string | null;
     completed: boolean;
     priority: number;
     completionEvent: string;
-    onComplete: (game: Game) => void;
-    tutorialManager: TutorialManager;
+    onComplete: (game: Game) => boolean;
+    tutorialManager: ProgressionManager;
 
-    constructor(stepData: any, tutorialManager: TutorialManager) {
+    constructor(stepData: any, tutorialManager: ProgressionManager) {
         this.text = stepData.text;
         this.completed = stepData.completed ?? false;
         this.priority = stepData.priority ?? 1;
@@ -75,14 +103,24 @@ class TutorialStep {
         this.onComplete = stepData.onComplete;
         this.tutorialManager = tutorialManager;
         
-        EventBus.once(this.completionEvent, this.complete, this);
+        EventBus.once(this.completionEvent, this.checkComplete, this);
     }
 
-    complete() {
+    getText() : string {
+        return this.text || 'Default Text';
+    }
+
+    checkComplete() {
         this.completed = true;
         // EventBus.off(this.completionEvent);
-        this.onComplete(this.tutorialManager.game);
-        this.tutorialManager.advanceTutorial();
+        if (this.onComplete(this.tutorialManager.game))
+            {
+                this.tutorialManager.advanceTutorial();
+            } else 
+            {
+                // Keep listening
+                EventBus.once(this.completionEvent, this.checkComplete, this);
+            }
     }
         
 }
