@@ -8,9 +8,22 @@ export class SimulatedHRM {
     constructor() {
         this.currentValue = 60;
 
+
+        EventBus.addListener('raise-hr', this.raiseHR, this);
+        EventBus.addListener('lower-hr', this.lowerHR, this);
         // Need to use an arrow function so it will inherit the parent scope
         setInterval(() => this.emitRandomValue(), 2000);
 
+    }
+
+    raiseHR() {
+        this.currentValue += 1;
+        EventBus.emit('newHeartRate', this.currentValue);
+    }
+
+    lowerHR()
+    {
+        this.currentValue -= 5;
     }
 
     private emitRandomValue(){

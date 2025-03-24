@@ -39,9 +39,15 @@ export class GameOver extends Scene
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         restartButton.on('pointerdown', () => {
-            this.scene.start('Game');
+            this.restartGame();
         });
     }
 
-   
+    restartGame() {
+        // Stop the current game scene
+        this.scene.stop('Game');
+
+        // Start a new instance of the game scene
+        this.scene.start('Game');
+    }
 }

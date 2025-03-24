@@ -127,6 +127,15 @@ export class Game extends Phaser.Scene
 
         }
         );
+        // tools for HRM simulator
+        this.input.keyboard?.on('keydown-L', () =>
+            {
+                EventBus.emit('raise-hr');
+            });
+            this.input.keyboard?.on('keydown-K', () =>
+                {
+                    EventBus.emit('lower-hr');
+                });
 
         EventBus.emit('current-scene-ready', this);
 
@@ -156,8 +165,9 @@ export class Game extends Phaser.Scene
             this.ship.body.setVelocityX(0);
         }
 
+  
         // Increment player distance
-        playerManager.playerDistance += delta/1000 * playerManager.playerSpeed;
+        playerManager.playerDistance += delta/1000 * playerManager.getModifiedSpeed();
 
         // Scroll the background if thrust is enabled
         if (this.ship.thrustEnabled) {
@@ -173,6 +183,11 @@ export class Game extends Phaser.Scene
 
         // Move the enemy ship
         playerManager.enemyDistance += Math.floor(delta * playerManager.enemySpeed);
+
+        // update player speed
+        if (playerManager.isHRSpeedActive) {
+            
+        }
     }
 
     // Remove event listeners when the scene is paused
@@ -194,6 +209,7 @@ export class Game extends Phaser.Scene
     handleShipAsteroidCollision(ship: any, asteroid: any)
     {
         this.ship.blowUp();
+        this.gameOver();
     }
 
     handleShipCoinCollision(ship: any, coin: any){
@@ -203,6 +219,11 @@ export class Game extends Phaser.Scene
     setTutorialText(step: TutorialStep)
     {
         if (step?.text) this.gameText.setText(step.text);
+    }
+
+    gameOver() {
+        // Transition to the game over scene
+        this.scene.start('GameOver');
     }
 
 }

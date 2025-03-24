@@ -38,7 +38,7 @@ class Asteroids extends Phaser.GameObjects.Group
 {
     lastSpawnTime: number = 0;
     isSpawnActive: boolean = false;
-    spawnRate: number = 0;
+    spawnRate: number = 3;
     spawnJitter: number = 0;
     nextSpawnTime: number = 0;
 

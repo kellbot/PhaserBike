@@ -58,7 +58,10 @@ export class HudScene extends Scene
         
         this.enemyDistanceText.setDepth(105).setOrigin(0.5, 0.5);
 
-        this.playerSpeedText = this.add.text(this.scale.width - 30, this.scale.height - 20, this.formatPlayerSpeed(playerManager.playerSpeed),
+        this.playerSpeedText = this.add.text(
+            this.scale.width - 30, 
+            this.scale.height - 20,
+             this.formatPlayerSpeed(playerManager.getModifiedSpeed()),
             {
                  fontFamily: 'Arial', fontSize: 10, color: '#ffffff', stroke: '#000000', strokeThickness: 1,
             align: 'right'
@@ -106,7 +109,7 @@ export class HudScene extends Scene
         const elapsedTime = Math.floor((time - this.startTime) / 1000);
         const hours = Math.floor(elapsedTime / 3600).toString().padStart(2, '0');
         const minutes = Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0');
-        const seconds = (elapsedTime % 60).toString().padStart(2, '');
+        const seconds = (elapsedTime % 60).toString().padStart(2, '0');
 
         // Update the elapsed time text
         this.hud.elapsedTimeText.setText(`${hours}:${minutes}:${seconds}`);
@@ -155,7 +158,7 @@ export class HudScene extends Scene
             this.enemyDistanceText.setY(enemyY);  
             this.enemyDistanceText.setText(`${(playerManager.enemyDistance/1000).toFixed(1)}\nkm`);
 
-            this.playerSpeedText.setText(this.formatPlayerSpeed(playerManager.playerSpeed));
+            this.playerSpeedText.setText(this.formatPlayerSpeed(playerManager.getModifiedSpeed()));
         }
        
     }

@@ -43,6 +43,9 @@ const TUTORIAL_DATA =  [
             text: 'Raise your HR to go faster',
             priority: 4,
             completionEvent: 'newHeartRate',
+            onActivate: (game: Game) => {
+                playerManager.isHRSpeedActive = true;
+            },
             onComplete: function(game: Game) {
                 if (playerManager.playerHR >= playerManager.getZoneMin(2)) {
                     return true;

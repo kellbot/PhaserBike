@@ -12,10 +12,14 @@ class PlayerManager {
     enemySpeed: number = 1; // km per second
 
     playerDistance: number = 0;
-    playerSpeed: number = 0.2; // this is different than ship speed, which is about animation speed
 
+
+    playerBaseSpeed: number = 0.2; // this is different than ship speed, which is about animation speed
+    
     targetDuration: number = 10; // minutes
     targetDistance: number = this.targetDuration * 60 * this.enemySpeed; // km
+
+    isHRSpeedActive: boolean = false;
 
     constructor()
     {
@@ -23,6 +27,8 @@ class PlayerManager {
 
         EventBus.addListener('newHeartRate', (hr: number) =>{ this.playerHR = hr}, this)
     }
+
+
 
     addCoins(quantity: number)
     {
@@ -39,6 +45,17 @@ class PlayerManager {
     getZoneMax(zone: number)
     {
         return this.maxHR * (50 + zone * 10) / 100;
+    }
+
+    getModifiedSpeed()
+    {
+        if (this.isHRSpeedActive)
+        {
+            let modifierHR = 1 + this.playerHR / this.maxHR;
+            return this.playerBaseSpeed * modifierHR;
+        } else {
+            return this.playerBaseSpeed;
+        }
     }
 }
 
