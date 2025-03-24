@@ -152,6 +152,7 @@ export class Game extends Scene
 
         EventBus.emit('current-scene-ready', this);
 
+        console.log("Zone 4 Max: ", playerManager.getZoneMax(4));
 
     }
 
