@@ -7,6 +7,8 @@ class PlayerManager {
     restingHR: number;
     maxHR: number;
 
+    enemyDistance: number = 0;
+
     constructor()
     {
         this.coinCount = 0;

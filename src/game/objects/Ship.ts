@@ -11,6 +11,9 @@ export class Ship extends Phaser.GameObjects.Container
 {
     private shipSprite: Phaser.GameObjects.Image;
     private thrustSprites: Phaser.GameObjects.Sprite[] = [];
+
+    // Add movement speed property
+    readonly SHIP_SPEED: number = 100; // pixels per second
     
     dodgeTween: Phaser.Tweens.Tween;
     body: Phaser.Physics.Arcade.Body;

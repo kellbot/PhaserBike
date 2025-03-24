@@ -29,9 +29,9 @@ export class Game extends Phaser.Scene
     tutorialManager: ProgressionManager;
     activeTutorial: TutorialStep;
 
-    // Add movement speed property
-    private readonly SHIP_SPEED: number = 200; // pixels per second
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+
+    enemySpeed: number = 1;
 
 
     constructor ()
@@ -163,9 +163,9 @@ export class Game extends Phaser.Scene
 
         // Handle ship movement
         if (this.cursors.left.isDown) {
-            this.ship.body.setVelocityX(-this.SHIP_SPEED);
+            this.ship.body.setVelocityX(-this.ship.SHIP_SPEED);
         } else if (this.cursors.right.isDown) {
-            this.ship.body.setVelocityX(this.SHIP_SPEED);
+            this.ship.body.setVelocityX(this.ship.SHIP_SPEED);
         } else {
             this.ship.body.setVelocityX(0);
         }
@@ -190,6 +190,9 @@ export class Game extends Phaser.Scene
 
         this.planet?.update(time, delta);
         this.ship.update(time, delta);
+
+        // Move the enemy ship
+        playerManager.enemyDistance += Math.floor(delta * this.enemySpeed);
     }
 
     // Remove event listeners when the scene is paused
