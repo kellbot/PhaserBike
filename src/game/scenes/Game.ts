@@ -19,19 +19,16 @@ export class Game extends Phaser.Scene
     asteroids: Asteroids;
 
     asteroidsActive: boolean = false;
-    coinsActive: boolean = false;
+
 
     planet: Planet;
 
     nextAsteroidIn: number = 0;
 
-    playerHeartRate: number = 0;
     tutorialManager: ProgressionManager;
     activeTutorial: TutorialStep;
 
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-
-    enemySpeed: number = 1;
 
 
     constructor ()
@@ -53,16 +50,14 @@ export class Game extends Phaser.Scene
         // Start the HudScene and keep it active
         this.scene.launch('HudScene');
 
-        this.anims.create({
-            key: 'bulletPulse',
-            frames: 'bullet',
-            frameRate: 8,
-            repeat: -1
+        // Emit an event to indicate that the Game scene is loaded
+        this.events.once('update', () => {
+            EventBus.emit('game-scene-loaded');
         });
 
         this.anims.create({
-            key: 'pulse',
-            frames: 'green-thrust',
+            key: 'bulletPulse',
+            frames: 'bullet',
             frameRate: 8,
             repeat: -1
         });
@@ -74,23 +69,16 @@ export class Game extends Phaser.Scene
             repeat: -1
         });
 
-        this.anims.create({
-            key: 'shipExplode',
-            frames: 'explosion',
-            frameRate: 16,
-            repeat: 0
-        });
-
         this.ship = new Ship(this);
         this.add.existing(this.ship);
       
         this.coins = new Coins(this);
-
-        this.asteroids = new Asteroids(this);
-
         this.add.existing(this.coins);
 
 
+        this.asteroids = new Asteroids(this);
+
+ 
         // Set up the shop planet
         this.planet = new Planet(this, 300, 300 )
         this.add.existing(this.planet);
@@ -140,11 +128,8 @@ export class Game extends Phaser.Scene
         }
         );
 
-
-
         EventBus.emit('current-scene-ready', this);
 
-        console.log("Zone 4 Max: ", playerManager.getZoneMax(4));
 
     }
 
@@ -152,23 +137,27 @@ export class Game extends Phaser.Scene
 
     update (time: number, delta: number)
     {
+
         // Ensure ship stays within screen bounds
         if (this.ship.x < 0) {
             this.ship.x = 0;
             this.ship.body.setVelocityX(0);
-        } else if (this.ship.x > this.cameras.main.width) {
-            this.ship.x = this.cameras.main.width;
+        } else if (this.ship.x > this.cameras.main.width - 50) {
+            this.ship.x = this.cameras.main.width - 50;
             this.ship.body.setVelocityX(0);
         }
 
         // Handle ship movement
         if (this.cursors.left.isDown) {
-            this.ship.body.setVelocityX(-this.ship.SHIP_SPEED);
+            this.ship.body.setVelocityX(-this.ship.speed);
         } else if (this.cursors.right.isDown) {
-            this.ship.body.setVelocityX(this.ship.SHIP_SPEED);
+            this.ship.body.setVelocityX(this.ship.speed);
         } else {
             this.ship.body.setVelocityX(0);
         }
+
+        // Increment player distance
+        playerManager.playerDistance += delta/1000 * playerManager.playerSpeed;
 
         // Scroll the background if thrust is enabled
         if (this.ship.thrustEnabled) {
@@ -177,22 +166,13 @@ export class Game extends Phaser.Scene
         this.coins.preUpdate(time, delta);
         this.asteroids.preUpdate(time, delta);
 
-        if (this.coinsActive){
-            if (!this.coins.lastSpawnTime) {
-                this.coins.lastSpawnTime = time;
-            }
-
-            if (time - this.coins.lastSpawnTime > Math.random() * 3000 + 2500) {
-                this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
-                this.coins.lastSpawnTime = time;
-            }
-        }
-
+        this.asteroids.update(time);
+        this.coins.update(time);
         this.planet?.update(time, delta);
         this.ship.update(time, delta);
 
         // Move the enemy ship
-        playerManager.enemyDistance += Math.floor(delta * this.enemySpeed);
+        playerManager.enemyDistance += Math.floor(delta * playerManager.enemySpeed);
     }
 
     // Remove event listeners when the scene is paused

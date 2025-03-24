@@ -1,5 +1,6 @@
 import { GameObjects } from "phaser";
 import { EventBus } from "../EventBus";
+import { spawn } from "child_process";
 export { Coin, Coins };
 
 class Coin extends GameObjects.Sprite
@@ -15,7 +16,9 @@ class Coin extends GameObjects.Sprite
 
         scene.physics.world.enable(this);
         if (this.body && this.body instanceof Phaser.Physics.Arcade.Body) {
-            this.body.setCircle(16);
+            this.body.setCircle(12);
+            // Adjust the hitbox to be a few pixels down and to the right
+            this.body.setOffset(5, 5);
         }
     }
 
@@ -50,6 +53,10 @@ class Coin extends GameObjects.Sprite
 class Coins extends Phaser.GameObjects.Group
 {
     lastSpawnTime: number = 0;
+    isSpawnActive: boolean = false;
+    spawnRate: number; // in seconds
+    spawnJitter: number = 0; // variability, in seconds
+    nextSpawnTime: number = 0; // The next time to spawn a coin
     
     constructor(scene: Phaser.Scene)
     {
@@ -99,5 +106,29 @@ class Coins extends Phaser.GameObjects.Group
         });
 
         return closestCoin;
+    }
+
+    setSpawnRate(seconds: number)
+    {
+        this.spawnRate = seconds;
+    }
+
+    update(time: number)
+    {
+        
+        if (this.isSpawnActive){
+            if (!this.lastSpawnTime) {
+                this.lastSpawnTime = time;
+            }
+
+            const spawnRateMS = this.spawnRate * 1000;
+            const spawnJitterMS = this.spawnJitter * 1000;
+
+            if (time > this.nextSpawnTime) {
+                this.spawnCoin(Phaser.Math.Between(50, 550), 0);
+                this.lastSpawnTime = time;
+                this.nextSpawnTime = time + Phaser.Math.Between(-spawnJitterMS, spawnJitterMS) + spawnRateMS;
+            } 
+        }
     }
 }

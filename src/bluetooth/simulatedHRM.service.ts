@@ -1,3 +1,4 @@
+import { playerManager } from '@/game/managers/PlayerManager';
 import { EventBus } from '../game/EventBus';
 
 export class SimulatedHRM {
@@ -14,7 +15,9 @@ export class SimulatedHRM {
 
     private emitRandomValue(){
         let adjustment = Phaser.Math.Between(-5, 5);
-        this.currentValue = this.currentValue + adjustment;
+        let newValue = this.currentValue + adjustment;
+        if (newValue < playerManager.restingHR) newValue = playerManager.restingHR;
+        this.currentValue = newValue;
         EventBus.emit('newHeartRate', this.currentValue )
 
     }

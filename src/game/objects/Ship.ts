@@ -13,7 +13,7 @@ export class Ship extends Phaser.GameObjects.Container
     private thrustSprites: Phaser.GameObjects.Sprite[] = [];
 
     // Add movement speed property
-    readonly SHIP_SPEED: number = 100; // pixels per second
+    readonly speed: number = 100; // pixels per second
     
     dodgeTween: Phaser.Tweens.Tween;
     body: Phaser.Physics.Arcade.Body;
@@ -59,6 +59,19 @@ export class Ship extends Phaser.GameObjects.Container
         this.shipSprite = scene.add.image(0, 0, 'player-ship').setOrigin(0.5,0.5);
         this.add(this.shipSprite);
 
+        scene.anims.create({
+            key: 'pulse',
+            frames: 'green-thrust',
+            frameRate: 8,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'shipExplode',
+            frames: 'explosion',
+            frameRate: 16,
+            repeat: 0
+        });
  
         // enable physics for the ship
         scene.physics.world.enable(this);
@@ -154,8 +167,8 @@ export class Ship extends Phaser.GameObjects.Container
         const screenWidth = this.scene.scale.width;
         if (targetX < 50) {
             targetX += 50;
-        } else if (targetX > screenWidth-50) {
-            targetX -= 50;
+        } else if (targetX > screenWidth-100) {
+            targetX -= 100;
         }
 
         const frames = 10;
