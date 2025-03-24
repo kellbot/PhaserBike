@@ -29,7 +29,7 @@ export class Planet extends Phaser.GameObjects.Container
         // Collision physics
         scene.physics.world.enable(this);
         if (this.body && this.body instanceof Phaser.Physics.Arcade.Body) {
-            this.body.setCircle(48);
+            this.body.setCircle(24);
         }
 
     }
