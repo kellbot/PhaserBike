@@ -12,6 +12,11 @@ class Coin extends GameObjects.Sprite
         this.play('spin');
 
         this.setVisible(true);
+
+        scene.physics.world.enable(this);
+        if (this.body && this.body instanceof Phaser.Physics.Arcade.Body) {
+            this.body.setCircle(16);
+        }
     }
 
     preUpdate(time: number, delta: number)
@@ -37,6 +42,8 @@ class Coin extends GameObjects.Sprite
     {
         this.setActive(false).setVisible(false);
         this.captured = false;
+        this.setPosition(-50, -50);
+        
     }
 }
 

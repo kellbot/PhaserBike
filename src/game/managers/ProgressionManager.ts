@@ -17,10 +17,11 @@ const TUTORIAL_DATA =  [
             }
         },
         {
-            text: 'Press spacebar to use the tractor beam to capture a coin',
+            text: 'Use the Left and Right Arrows to move the ship',
             priority: 2,
             completionEvent: 'coinCaptured',
-            onComplete: function() {
+            onComplete: function(game: Game) {
+                game.coinsActive = true;
                 return true;
             }
         },
@@ -29,7 +30,7 @@ const TUTORIAL_DATA =  [
             completionEvent: 'coinCaptured',
             onComplete: function() {
                 console.log("Launching shop");
-                EventBus.emit('launchShop');
+               // EventBus.emit('launchShop');
             }
         },
         {

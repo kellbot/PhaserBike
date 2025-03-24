@@ -1,6 +1,5 @@
 import { EventBus } from '../EventBus';
-import { Scene } from 'phaser';
-import { Coins } from '../objects/Coin';
+import { Coin, Coins } from '../objects/Coin';
 import { Ship } from '../objects/Ship';
 import { Planet } from '../objects/Planet';
 import { HudScene } from './components/Hud';
@@ -8,7 +7,7 @@ import { Asteroids } from '../objects/Asteroid';
 import { ProgressionManager, TutorialStep } from '../managers/ProgressionManager'
 import { playerManager } from '../managers/PlayerManager';
 
-export class Game extends Scene
+export class Game extends Phaser.Scene
 {
 
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -30,6 +29,11 @@ export class Game extends Scene
     tutorialManager: ProgressionManager;
     activeTutorial: TutorialStep;
 
+    // Add movement speed property
+    private readonly SHIP_SPEED: number = 200; // pixels per second
+    private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+
+
     constructor ()
     {
         super('Game');
@@ -42,6 +46,9 @@ export class Game extends Scene
         this.camera.setBackgroundColor(0x00ff00);
 
         this.background = this.add.tileSprite(0,0, 600, 1600, 'space-background').setOrigin(0).setScrollFactor(0,1);
+        // Initialize cursor keys
+        if (this.input.keyboard) this.cursors = this.input.keyboard.createCursorKeys();
+    
 
         // Start the HudScene and keep it active
         this.scene.launch('HudScene');
@@ -90,8 +97,7 @@ export class Game extends Scene
         this.planet.setVisible(false);
         this.planet.setActive(false);
 
-        this.physics.add.overlap(this.ship, this.planet, this.handleShipPlanetCollision, undefined, this)
-
+  
 
         // Initialize the progression manager
         this.tutorialManager = new ProgressionManager(this);
@@ -107,28 +113,14 @@ export class Game extends Scene
                 wordWrap: { width: 500, useAdvancedWrap: true }
             }).setOrigin(0.5).setDepth(100);
 
+        this.physics.world.enableBody(this.ship);
 
+        this.physics.add.overlap(this.ship, this.planet, this.handleShipPlanetCollision, undefined, this)
 
         this.physics.add.overlap(this.ship, this.asteroids, this.handleShipAsteroidCollision, undefined, this);
-
-        this.input.keyboard?.on('keydown-SPACE', () =>
-            {
-
-                this.ship.useActiveTool(this.coins.getClosestCoin(this.ship.x, this.ship.y));
-                if (!this.coinsActive) {
-                    this.coinsActive = true;
-                    this.coins.lastSpawnTime = this.time.now;
-
-                    this.ship.enableTool('Tractor Beam');
-                }
-
-            });
-
-        this.input.keyboard?.on('keydown-V', () =>
-            {
-                this.ship.cycleTools()
-            });
-
+        this.physics.add.overlap(this.ship, this.coins, this.handleShipCoinCollision, undefined, this);
+                  
+ 
 
         EventBus.on('tutorial-updated', this.setTutorialText, this);
         EventBus.on('newHeartRate', () =>
@@ -160,6 +152,24 @@ export class Game extends Scene
 
     update (time: number, delta: number)
     {
+        // Ensure ship stays within screen bounds
+        if (this.ship.x < 0) {
+            this.ship.x = 0;
+            this.ship.body.setVelocityX(0);
+        } else if (this.ship.x > this.cameras.main.width) {
+            this.ship.x = this.cameras.main.width;
+            this.ship.body.setVelocityX(0);
+        }
+
+        // Handle ship movement
+        if (this.cursors.left.isDown) {
+            this.ship.body.setVelocityX(-this.SHIP_SPEED);
+        } else if (this.cursors.right.isDown) {
+            this.ship.body.setVelocityX(this.SHIP_SPEED);
+        } else {
+            this.ship.body.setVelocityX(0);
+        }
+
         // Scroll the background if thrust is enabled
         if (this.ship.thrustEnabled) {
             this.background.tilePositionY -= 0.05;
@@ -175,28 +185,6 @@ export class Game extends Scene
             if (time - this.coins.lastSpawnTime > Math.random() * 3000 + 2500) {
                 this.coins.spawnCoin(Phaser.Math.Between(50, 550), 0);
                 this.coins.lastSpawnTime = time;
-            }
-        }
-
-        if (this.ship.isToolEnabled('gun') && time - this.ship.lastFireTime > 1000 / this.ship.rateOfFire) {
-            this.ship.fire();
-            this.ship.lastFireTime = time;
-        }
-        
-        if (this.asteroidsActive) {
-            if (time - this.asteroids.lastSpawnTime > this.nextAsteroidIn){
-   
-                let xValues = [];
-                for (let i = -1; i <= 1; i++) {
-                    xValues.push(this.ship.x + i *50);
-                }
-
-
-                let spawnX = Phaser.Math.RND.pick(xValues);
-  
-                this.asteroids.spawnAsteroid(spawnX, 0);
-                this.asteroids.lastSpawnTime = time;
-                this.nextAsteroidIn = Phaser.Math.Between(1, 5) * 1000;
             }
         }
 
@@ -223,6 +211,10 @@ export class Game extends Scene
     handleShipAsteroidCollision(ship: any, asteroid: any)
     {
         this.ship.blowUp();
+    }
+
+    handleShipCoinCollision(ship: any, coin: any){
+        coin.captureSuccess()
     }
 
     setTutorialText(step: TutorialStep)

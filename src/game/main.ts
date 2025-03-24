@@ -10,7 +10,7 @@ import { HudScene } from './scenes/components/Hud';
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
-    type: AUTO,
+    type: Phaser.AUTO,
     width: 600,
     height: 800,
     parent: 'game-container',
@@ -18,7 +18,7 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: false,
+            debug: true,
             gravity: { x: 0, y: 0 }
         }
     },
