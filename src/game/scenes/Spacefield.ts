@@ -1,13 +1,12 @@
 import { EventBus } from '../EventBus';
-import { Coin, Coins } from '../objects/Coin';
+import { Coins } from '../objects/Coin';
 import { Ship } from '../objects/Ship';
 import { Planet } from '../objects/Planet';
-import { HudScene } from './components/Hud';
 import { Asteroids } from '../objects/Asteroid';
 import { ProgressionManager, TutorialStep } from '../managers/ProgressionManager'
 import { playerManager } from '../managers/PlayerManager';
 
-export class Game extends Phaser.Scene
+export class Spacefield extends Phaser.Scene
 {
 
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -16,7 +15,7 @@ export class Game extends Phaser.Scene
     ship: Ship;
     coin: Phaser.GameObjects.Sprite;
     coins: Coins;
-    asteroids: Asteroids;
+    asteroidManager: Asteroids;
 
     asteroidsActive: boolean = false;
 
@@ -33,27 +32,21 @@ export class Game extends Phaser.Scene
 
     constructor ()
     {
-        super('Game');
+        super('Spacefield');
 
     }
 
     create ()
     {
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
+        this.camera.setBackgroundColor(0x222222);
 
-        this.background = this.add.tileSprite(0,0, 600, 1600, 'space-background').setOrigin(0).setScrollFactor(0,1);
+        this.background = this.add.tileSprite(0,playerManager.hudHeight, 600, 1600, 'space-background').setOrigin(0).setScrollFactor(0,1);
         // Initialize cursor keys
         if (this.input.keyboard) this.cursors = this.input.keyboard.createCursorKeys();
     
 
-        // Start the HudScene and keep it active
         this.scene.launch('HudScene');
-
-        // Emit an event to indicate that the Game scene is loaded
-        this.events.once('update', () => {
-            EventBus.emit('game-scene-loaded');
-        });
 
         this.anims.create({
             key: 'bulletPulse',
@@ -76,7 +69,7 @@ export class Game extends Phaser.Scene
         this.add.existing(this.coins);
 
 
-        this.asteroids = new Asteroids(this);
+        this.asteroidManager = new Asteroids(this);
 
  
         // Set up the shop planet
@@ -89,12 +82,9 @@ export class Game extends Phaser.Scene
 
         // Initialize the progression manager
         this.tutorialManager = new ProgressionManager(this);
-        
-
-
-        
+                
         const tutorialText = this.tutorialManager.activeStep ? this.tutorialManager.activeStep.getText() : '';
-            this.gameText = this.add.text(300, 200, tutorialText, {
+            this.gameText = this.add.text(300, 100, tutorialText, {
                 fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
                 stroke: '#000000', strokeThickness: 6,
                 align: 'center',
@@ -105,12 +95,11 @@ export class Game extends Phaser.Scene
 
         this.physics.add.overlap(this.ship, this.planet, this.handleShipPlanetCollision, undefined, this)
 
-        this.physics.add.overlap(this.ship, this.asteroids, this.handleShipAsteroidCollision, undefined, this);
+        this.physics.add.overlap(this.ship, this.asteroidManager, this.handleShipAsteroidCollision, undefined, this);
         this.physics.add.overlap(this.ship, this.coins, this.handleShipCoinCollision, undefined, this);
                   
  
 
-        EventBus.on('tutorial-updated', this.setTutorialText, this);
         EventBus.on('newHeartRate', () =>
         {
             if (!this.ship.thrustEnabled) this.ship.enableThrust();
@@ -136,7 +125,10 @@ export class Game extends Phaser.Scene
                 {
                     EventBus.emit('lower-hr');
                 });
-
+        EventBus.on('tutorial-updated', this.setTutorialText, this);
+        this.events.once('update', () => {
+            EventBus.emit('game-scene-loaded');
+        });
         EventBus.emit('current-scene-ready', this);
 
 
@@ -174,9 +166,9 @@ export class Game extends Phaser.Scene
             this.background.tilePositionY -= 0.05;
         }
         this.coins.preUpdate(time, delta);
-        this.asteroids.preUpdate(time, delta);
+        this.asteroidManager.preUpdate(time, delta);
 
-        this.asteroids.update(time);
+        this.asteroidManager.update(time);
         this.coins.update(time);
         this.planet?.update(time, delta);
         this.ship.update(time, delta);
@@ -190,15 +182,6 @@ export class Game extends Phaser.Scene
         }
     }
 
-    // Remove event listeners when the scene is paused
-    pause() {
-        EventBus.off('tutorial-updated', this.setTutorialText, this);
-    }
-
-    // Remove event listeners when the scene is stopped
-    shutdown() {
-        EventBus.off('tutorial-updated', this.setTutorialText, this);
-    }
 
     // I don't know why it complains if I specify Ship and Planet types
     handleShipPlanetCollision(ship: any, planet: any){
@@ -223,6 +206,9 @@ export class Game extends Phaser.Scene
 
     gameOver() {
         // Transition to the game over scene
+        
+        EventBus.off('tutorial-updated', this.setTutorialText, this);
+        this.scene.stop('HudScene'); // Stop the HudScene
         this.scene.start('GameOver');
     }
 

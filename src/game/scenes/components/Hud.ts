@@ -30,28 +30,31 @@ export class HudScene extends Scene
         
         EventBus.on('coinScoreUpdate', this.updateCoinDisplay, this);
 
-        this.startTime = this.scene.get('Game').sys.game.loop.time;
+        this.startTime = this.scene.get('Spacefield').sys.game.loop.time;
 
         EventBus.on('game-scene-loaded', this.addDistanceTrack, this);
+
+        // why does this trigger on load
+        // this.events.on('shutdown', this.shutdown);
     }
 
     addDistanceTrack()
     {
         this.distanceTrack = this.add.graphics();
         this.distanceTrack.fillStyle(0x333333, 1); // Set to dark gray
-        this.distanceTrack.fillRect(this.scale.width - 20, 0, 20, this.scale.height);
+        this.distanceTrack.fillRect(this.scale.width - 30, 0, 30, this.scale.height);
         this.distanceTrack.setDepth(50); // Ensure it is on top
 
         // Draw a light gray vertical line, 10 pixels wide, down the middle of distanceTrack
-        const lineX = this.scale.width - 15; // Middle of the 20-pixel wide distanceTrack
+        const lineX = this.scale.width - 20; 
         this.distanceTrack.fillStyle(0xCCCCCC, 1); // Set to light gray
-        this.distanceTrack.fillRect(lineX, 10, 10, this.scale.height - 20); // 10 pixels wide, starting 10 pixels below the top and ending 10 pixels above the bottom
+        this.distanceTrack.fillRect(lineX, 20, 10, this.scale.height - 40); // 10 pixels wide, starting 10 pixels below the top and ending 10 pixels above the bottom
 
         // Add a red dot to the distanceTrack
         this.redDot = this.add.graphics();
         this.redDot.setDepth(101); // Ensure it is on top of the distanceTrack
-        this.enemyDistanceText = this.add.text(this.scale.width - 10, this.scale.height - 10, '', {
-            fontFamily: 'Arial', fontSize: 10, color: '#ffffff', 
+        this.enemyDistanceText = this.add.text(this.scale.width - 15, this.scale.height - 10, '', {
+            fontFamily: 'Arial', fontSize: 12, color: '#ffffff', 
             align: 'center'
         });
         this.greenDot = this.add.graphics().setDepth(99);
@@ -63,10 +66,10 @@ export class HudScene extends Scene
             this.scale.height - 20,
              this.formatPlayerSpeed(playerManager.getModifiedSpeed()),
             {
-                 fontFamily: 'Arial', fontSize: 10, color: '#ffffff', stroke: '#000000', strokeThickness: 1,
+                 fontFamily: 'Arial', fontSize: 14, color: '#ffffff', stroke: '#000000', strokeThickness: 1,
             align: 'right'
             }
-        ).setOrigin(1, 0.5);
+        ).setOrigin(1,1);
 
         this.enableDistanceTrack();
     }
@@ -123,7 +126,7 @@ export class HudScene extends Scene
         let speedStr = speed.toString();
         if (speed < 1) {
             units = 'm/s';
-            speedStr = (speed * 1000).toString();
+            speedStr = (speed * 1000).toFixed(0).toString();
         } else if (speed < 1000) {
             speedStr = speed.toFixed(1).toString();
         }
@@ -148,12 +151,12 @@ export class HudScene extends Scene
             // Clear and redraw the red dot at the new position
             this.redDot.clear();
             this.redDot.fillStyle(0xFF0000, 1); // Set to red
-            this.redDot.fillCircle(this.scale.width - 10, enemyY, 12); // 18 pixels wide
+            this.redDot.fillCircle(this.scale.width - 15, enemyY, 14); // 18 pixels wide
        
             // Clear and redraw the green dot at the new position
             this.greenDot.clear();
             this.greenDot.fillStyle(0x44CC22, 1);
-            this.greenDot.fillCircle(this.scale.width - 10, playerY, 12);
+            this.greenDot.fillCircle(this.scale.width - 15, playerY, 14);
 
             this.enemyDistanceText.setY(enemyY);  
             this.enemyDistanceText.setText(`${(playerManager.enemyDistance/1000).toFixed(1)}\nkm`);

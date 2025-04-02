@@ -44,10 +44,9 @@ export class GameOver extends Scene
     }
 
     restartGame() {
-        // Stop the current game scene
-        this.scene.stop('Game');
-
         // Start a new instance of the game scene
-        this.scene.start('Game');
+        this.scene.start('Spacefield');
+        // Restart the HudScene
+        this.scene.launch('HudScene');
     }
 }

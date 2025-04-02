@@ -1,5 +1,5 @@
 import { EventBus  } from "../EventBus";
-import { Game } from "../scenes/Game";
+import { Spacefield } from "../scenes/Spacefield";
 import { playerManager } from "./PlayerManager";
 
 export { ProgressionManager, TutorialStep };
@@ -12,24 +12,24 @@ const TUTORIAL_DATA =  [
             preload: true,
             completionEvent: 'newHeartRate',
             // I feel like maybe this logic doesn't belong here
-            onComplete: function(game: Game) {
+            onComplete: function(game: Spacefield) {
                 game.coins.isSpawnActive = true;
                 game.coins.setSpawnRate(15);
                 return true;
             }
         },
         {
-            text: 'Use the Left and Right Arrows to move the ship to a coin',
-            priority: 2,
-            preload: true,
-            completionEvent: 'coinCaptured',
-            onComplete: function(game: Game) {
-                return true;
-            }
+            text: 'Step 1: try not to die. Use the left and right arrows.',
+            priority: 5,
+            completionEvent: '3-asteroids-dodged',
+            onActivate: (game: Spacefield) => {
+                game.asteroidManager.isSpawnActive = true},
+            onComplete: () =>{ return true}
+            
         },
         {
-            text: 'Collect coins',
-            priority: 3,
+            text: 'Collect 3 coins',
+            priority: 20,
             completionEvent: 'coinCaptured',
             preload: true,
             onComplete: function() {
@@ -41,37 +41,29 @@ const TUTORIAL_DATA =  [
         },
         {
             text: 'Raise your HR to go faster',
-            priority: 4,
+            priority: 30,
             completionEvent: 'newHeartRate',
-            onActivate: (game: Game) => {
+            onActivate: (game: Spacefield) => {
                 playerManager.isHRSpeedActive = true;
             },
-            onComplete: function(game: Game) {
+            onComplete: function(game: Spacefield) {
                 if (playerManager.playerHR >= playerManager.getZoneMin(2)) {
                     return true;
                 }
                 return false;
             }
         },
-        {
-            text: 'If you can dodge a wrench, you can dodge an asteroid',
-            priority: 10,
-            completionEvent: 'notimplemented',
-            onActivate: (game: Game) => {
-                game.asteroids.isSpawnActive = true},
-            onComplete: () =>{ return false}
-            
-        }
+
     ];
 
 class ProgressionManager {
     
     tutorialSteps: TutorialStep[] = [];
-    game: Game;
+    game: Spacefield;
 
     activeStep: TutorialStep | null;
 
-    constructor(game: Game) {
+    constructor(game: Spacefield) {
         for (let stepData of TUTORIAL_DATA) {
             this.tutorialSteps.push(new TutorialStep(stepData, this));
         }
@@ -81,7 +73,9 @@ class ProgressionManager {
     }
 
     advanceTutorial(){
+        console.log("Tutorial advance", this.activeStep);
         this.activeStep = this.getNextStep();
+        console.log("Tutorial advance", this.activeStep);
         if (this.activeStep?.onActivate) this.activeStep.onActivate(this.game);
         // If we didn't arm the event listener before we need to do it now
         if (!this.activeStep?.preload) this.activeStep?.setCompletionListener()
@@ -106,8 +100,8 @@ class TutorialStep {
     priority: number;
     completionEvent: string;
     preload: boolean = false;
-    onComplete: (game: Game) => boolean;
-    onActivate: (game: Game) => null;
+    onComplete: (game: Spacefield) => boolean;
+    onActivate: (game: Spacefield) => null;
     tutorialManager: ProgressionManager;
 
     constructor(stepData: any, tutorialManager: ProgressionManager) {

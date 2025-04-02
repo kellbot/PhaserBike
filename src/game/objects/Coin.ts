@@ -1,11 +1,13 @@
 import { GameObjects } from "phaser";
 import { EventBus } from "../EventBus";
 import { spawn } from "child_process";
+import { playerManager } from "../managers/PlayerManager";
 export { Coin, Coins };
 
 class Coin extends GameObjects.Sprite
 {
     captured: boolean = false;
+    speed: number = 50;
 
     constructor (scene: Phaser.Scene, x: number, y: number)
     {
@@ -30,7 +32,7 @@ class Coin extends GameObjects.Sprite
         {
             this.setActive(false).setVisible(false);
         } else if (!this.captured) {
-            this.y += 30 * delta / 1000;
+            this.y += this.speed * delta / 1000;
         }
 
     }
@@ -125,7 +127,7 @@ class Coins extends Phaser.GameObjects.Group
             const spawnJitterMS = this.spawnJitter * 1000;
 
             if (time > this.nextSpawnTime) {
-                this.spawnCoin(Phaser.Math.Between(50, 550), 0);
+                this.spawnCoin(Phaser.Math.Between(50, 550), playerManager.hudHeight);
                 this.lastSpawnTime = time;
                 this.nextSpawnTime = time + Phaser.Math.Between(-spawnJitterMS, spawnJitterMS) + spawnRateMS;
             } 

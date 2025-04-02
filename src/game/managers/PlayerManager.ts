@@ -3,6 +3,8 @@ import { EventBus
  } from "../EventBus";
 class PlayerManager {
 
+    hudHeight: number = 150;
+
     coinCount: number; 
     restingHR: number;
     maxHR: number;

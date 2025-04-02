@@ -89,7 +89,7 @@ export class MainMenu extends Scene
         console.log('Using BLE Heart Rate Monitor');
         await heartRateService.startNotifications();
 
-        this.scene.start('Game');
+        this.scene.start('Spacefield');
         
     }
 
@@ -98,13 +98,8 @@ export class MainMenu extends Scene
         DeviceState.isHRMConnected = true; // Simulate connection
         let simHRM = new SimulatedHRM();
         console.log('Using Simulated Heart Rate Monitor');
-        this.scene.start('Game');
+        this.scene.start('Spacefield');
      
-    }
-    changeScene ()
-    {
-
-        this.scene.start('Game');
     }
 
    
